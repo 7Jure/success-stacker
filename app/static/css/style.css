@@ -1,0 +1,33 @@
+
+/* Range slider styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #000;
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #000;
+    cursor: pointer;
+    border: none;
+}
+
+textarea:focus {
+    outline: none;
+}

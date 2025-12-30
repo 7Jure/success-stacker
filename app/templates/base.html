@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Success Stacker{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-50">
+    {% if current_user.is_authenticated %}
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{{ url_for('main.feed') }}" class="text-xl font-bold">Success Stacker</a>
+            <div class="flex gap-4">
+                <a href="{{ url_for('main.morning') }}">Jutro</a>
+                <a href="{{ url_for('main.evening') }}">Večer</a>
+                <a href="{{ url_for('main.feed') }}">Feed</a>
+                <a href="{{ url_for('main.insights') }}">Insights</a>  <!-- NOVI LINK -->
+                <a href="{{ url_for('auth.logout') }}">Odjava</a>
+                <a href="{{ url_for('main.export_data') }}">Export CSV</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-4xl mx-auto px-4 mt-4">
+                {% for category, message in messages %}
+                <div class="p-4 mb-4 rounded {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

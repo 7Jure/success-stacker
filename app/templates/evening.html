@@ -1,0 +1,61 @@
+
+{% extends "base.html" %}
+{% block title %}Večernji ritual{% endblock %}
+{% block content %}
+<div class="py-8">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold mb-2">🌙 Večernji Shutdown</h1>
+        <p class="text-gray-600 mb-8">Složi svoje pobjede za danas</p>
+        
+        <form method="POST">
+            <div class="space-y-6 mb-8">
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <label class="block text-lg font-medium mb-2">💼 Posao</label>
+                    <textarea name="win_posao" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Što si postigao u karijeri danas?"></textarea>
+                </div>
+                
+                <div class="border-l-4 border-red-500 pl-4">
+                    <label class="block text-lg font-medium mb-2">❤️ Zdravlje</label>
+                    <textarea name="win_zdravlje" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        placeholder="Kako si brinuo o sebi?"></textarea>
+                </div>
+                
+                <div class="border-l-4 border-purple-500 pl-4">
+                    <label class="block text-lg font-medium mb-2">👥 Odnosi</label>
+                    <textarea name="win_odnosi" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                        placeholder="Kako si negovo odnose?"></textarea>
+                </div>
+                
+                <div class="border-l-4 border-green-500 pl-4">
+                    <label class="block text-lg font-medium mb-2">💰 Financije</label>
+                    <textarea name="win_financije" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                        placeholder="Korak prema financijskoj sigurnosti?"></textarea>
+                </div>
+                
+                <div class="border-l-4 border-yellow-500 pl-4">
+                    <label class="block text-lg font-medium mb-2">🌱 Osobni rast</label>
+                    <textarea name="win_rast" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500"
+                        placeholder="Što novo si naučio/iskusio?"></textarea>
+                </div>
+            </div>
+            
+            <div class="mb-8 bg-gray-50 p-6 rounded-lg">
+                <label class="block text-lg font-medium mb-2">🙏 Za što si zahvalan danas?</label>
+                <textarea name="reflection" required rows="4"
+                    class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Npr. Zahvalan sam na podršci tima danas"></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-black text-white py-4 rounded-lg text-lg font-medium hover:bg-gray-800">
+                Zatvori dan
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

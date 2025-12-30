@@ -1,0 +1,35 @@
+
+{% extends "base.html" %}
+{% block title %}Jutarnji ritual{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="max-w-2xl w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold mb-2">🌅 Dobro jutro!</h1>
+        <p class="text-gray-600 mb-8">Započni dan s malom refleksijom</p>
+        
+        <form method="POST">
+            <div class="mb-8">
+                <label class="block text-lg font-medium mb-4">Kako se osjećaš danas?</label>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-600">Iscrpljen 😴</span>
+                    <input type="range" name="energy" id="energy" min="1" max="5" value="3" class="flex-1"
+                        oninput="document.getElementById('energy-value').textContent = this.value">
+                    <span class="text-sm text-gray-600">Pun energije ⚡</span>
+                </div>
+                <p class="text-center text-3xl font-bold mt-4"><span id="energy-value">3</span>/5</p>
+            </div>
+            
+            <div class="mb-8">
+                <label class="block text-lg font-medium mb-2">Koja je tvoja glavna namjera za danas?</label>
+                <textarea name="intent" required rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Npr. Završiti prezentaciju bez stresa"></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-black text-white py-4 rounded-lg text-lg font-medium hover:bg-gray-800">
+                Započni dan
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
