@@ -10,11 +10,25 @@
             <a href="{{ url_for('main.evening') }}" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600">Večer</a>
         </div>
     </div>
-    
+
+    <!-- Streak statistika -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-gradient-to-r from-orange-400 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+            <p class="text-sm uppercase tracking-wide opacity-90">🔥 Trenutni Streak</p>
+            <p class="text-5xl font-bold mt-2">{{ streaks.current_streak }}</p>
+            <p class="text-sm mt-1 opacity-90">uzastopnih dana</p>
+        </div>
+        <div class="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+            <p class="text-sm uppercase tracking-wide opacity-90">🏆 Najbolji Streak</p>
+            <p class="text-5xl font-bold mt-2">{{ streaks.longest_streak }}</p>
+            <p class="text-sm mt-1 opacity-90">dana zaredom</p>
+        </div>
+    </div>
+
     {% if entries %}
         <div class="space-y-6">
             {% for entry in entries %}
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="bg-white p-6 rounded-lg shadow-md card-hover fade-in">
                 <div class="flex justify-between items-start mb-4 pb-4 border-b">
                     <div>
                         <h3 class="text-xl font-bold">{{ entry.date.strftime('%d. %m. %Y') }}</h3>
@@ -22,13 +36,31 @@
                         <p class="text-sm text-gray-600 mt-1">Energija: {{ entry.morning_energy }}/5</p>
                         {% endif %}
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 items-center">
                         {% if entry.is_morning_complete %}
                         <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">☀️ Jutro</span>
                         {% endif %}
                         {% if entry.is_evening_complete %}
                         <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">🌙 Večer</span>
                         {% endif %}
+
+                        <!-- Edit/Delete gumbi -->
+                        <div class="flex gap-1 ml-2">
+                            <a href="{{ url_for('main.edit_entry', entry_id=entry.id) }}"
+                               class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded"
+                               title="Uredi">
+                                ✏️
+                            </a>
+                            <form method="POST" action="{{ url_for('main.delete_entry', entry_id=entry.id) }}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Jesi li siguran da želiš obrisati ovaj unos?');">
+                                <button type="submit"
+                                        class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded"
+                                        title="Obriši">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 
@@ -84,6 +116,44 @@
             </div>
             {% endfor %}
         </div>
+
+        <!-- Paginacija -->
+        {% if pagination.pages > 1 %}
+        <div class="flex justify-center items-center gap-2 mt-8">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('main.feed', page=pagination.prev_num) }}"
+               class="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 shadow">
+                ← Prethodna
+            </a>
+            {% endif %}
+
+            <div class="flex gap-2">
+                {% for p in range(1, pagination.pages + 1) %}
+                    {% if p == page %}
+                    <span class="px-4 py-2 bg-blue-500 text-white rounded-lg shadow">{{ p }}</span>
+                    {% elif p <= 3 or p > pagination.pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                    <a href="{{ url_for('main.feed', page=p) }}"
+                       class="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 shadow">
+                        {{ p }}
+                    </a>
+                    {% elif p == 4 or p == pagination.pages - 3 %}
+                    <span class="px-4 py-2 text-gray-500">...</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if pagination.has_next %}
+            <a href="{{ url_for('main.feed', page=pagination.next_num) }}"
+               class="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 shadow">
+                Sljedeća →
+            </a>
+            {% endif %}
+        </div>
+
+        <p class="text-center text-sm text-gray-500 mt-4">
+            Stranica {{ page }} od {{ pagination.pages }} ({{ pagination.total }} unosa)
+        </p>
+        {% endif %}
     {% else %}
         <div class="text-center py-16">
             <p class="text-xl text-gray-600 mb-4">Još nemaš unesenih dana.</p>

@@ -14,6 +14,10 @@ env/
 instance/
 *.db
 
+# Logs
+logs/
+*.log
+
 # Environment
 .env
 .env.local

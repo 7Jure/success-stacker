@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Kalendar{% endblock %}
+{% block content %}
+<div class="py-8">
+    <h1 class="text-3xl font-bold mb-8">📅 Godišnji Pregled</h1>
+
+    <!-- Statistika -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gradient-to-r from-orange-400 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+            <p class="text-sm uppercase tracking-wide opacity-90">🔥 Trenutni Streak</p>
+            <p class="text-4xl font-bold mt-2">{{ streaks.current_streak }}</p>
+            <p class="text-sm mt-1 opacity-90">dana</p>
+        </div>
+        <div class="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+            <p class="text-sm uppercase tracking-wide opacity-90">🏆 Najbolji Streak</p>
+            <p class="text-4xl font-bold mt-2">{{ streaks.longest_streak }}</p>
+            <p class="text-sm mt-1 opacity-90">dana</p>
+        </div>
+        <div class="bg-gradient-to-r from-blue-400 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+            <p class="text-sm uppercase tracking-wide opacity-90">📊 Ukupno dana</p>
+            <p class="text-4xl font-bold mt-2">{{ total_entries }}</p>
+            <p class="text-sm mt-1 opacity-90">s unosima</p>
+        </div>
+        <div class="bg-gradient-to-r from-green-400 to-green-600 text-white p-6 rounded-lg shadow-lg">
+            <p class="text-sm uppercase tracking-wide opacity-90">✅ Potpuni dani</p>
+            <p class="text-4xl font-bold mt-2">{{ complete_days }}</p>
+            <p class="text-sm mt-1 opacity-90">jutro + večer</p>
+        </div>
+    </div>
+
+    <!-- Legenda -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <p class="text-sm font-medium mb-2">Legenda:</p>
+        <div class="flex items-center gap-6 text-sm">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-gray-200 rounded"></div>
+                <span>Bez unosa</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-200 rounded"></div>
+                <span>Djelomično (1 bod)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-400 rounded"></div>
+                <span>Dobro (2 boda)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-600 rounded"></div>
+                <span>Odlično (3 boda)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Heatmap kalendar -->
+    <div class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto">
+        <div id="calendar-heatmap"></div>
+    </div>
+</div>
+
+<script>
+// Podaci sa servera
+const entriesData = {{ entries_by_date | tojson }};
+
+// Funkcija za generiranje heatmap-a
+function generateHeatmap() {
+    const container = document.getElementById('calendar-heatmap');
+    const today = new Date();
+    const yearAgo = new Date(today);
+    yearAgo.setDate(today.getDate() - 364);
+
+    // Generiraj dane
+    let html = '<div class="flex flex-col gap-1">';
+
+    // Mjeseci header
+    html += '<div class="flex gap-1 mb-2 pl-8">';
+    const months = [];
+    let currentMonth = yearAgo.getMonth();
+    let weekCount = 0;
+
+    for (let d = new Date(yearAgo); d <= today; d.setDate(d.getDate() + 7)) {
+        if (d.getMonth() !== currentMonth) {
+            months.push({
+                name: d.toLocaleDateString('hr-HR', { month: 'short' }),
+                week: weekCount
+            });
+            currentMonth = d.getMonth();
+        }
+        weekCount++;
+    }
+
+    for (let m of months) {
+        html += `<span class="text-xs text-gray-600" style="width: 12px; margin-left: ${m.week * 14}px;">${m.name}</span>`;
+    }
+    html += '</div>';
+
+    // Dani u tjednu (7 redova)
+    const days = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
+    for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+        html += '<div class="flex gap-1 items-center">';
+        html += `<span class="text-xs text-gray-600 w-6">${days[dayOfWeek]}</span>`;
+
+        // Počni od prvog ponedjeljka
+        let currentDate = new Date(yearAgo);
+        const dayOffset = (dayOfWeek + 1) % 7; // Pon=0, Ned=6
+
+        // Poravnaj na prvi ponedjelja
+        const firstDay = currentDate.getDay();
+        const daysToFirstMonday = (8 - firstDay) % 7;
+        currentDate.setDate(currentDate.getDate() + daysToFirstMonday);
+
+        // Idi na odgovarajući dan u tjednu
+        currentDate.setDate(currentDate.getDate() + dayOffset);
+
+        while (currentDate <= today) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const entry = entriesData[dateStr];
+
+            let bgColor = 'bg-gray-200';
+            let title = 'Bez unosa';
+
+            if (entry) {
+                if (entry.score === 1) {
+                    bgColor = 'bg-green-200';
+                    title = 'Djelomično popunjeno';
+                } else if (entry.score === 2) {
+                    bgColor = 'bg-green-400';
+                    title = 'Dobro popunjeno';
+                } else if (entry.score >= 3) {
+                    bgColor = 'bg-green-600';
+                    title = 'Odlično popunjeno!';
+                }
+
+                if (entry.morning_energy) {
+                    title += ` | Energija: ${entry.morning_energy}/5`;
+                }
+            }
+
+            const formattedDate = currentDate.toLocaleDateString('hr-HR');
+            html += `<div class="w-3 h-3 rounded ${bgColor} hover:ring-2 hover:ring-blue-400 cursor-pointer transition-all"
+                          title="${formattedDate}: ${title}"></div>`;
+
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+
+        html += '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Generiraj kad se stranica učita
+document.addEventListener('DOMContentLoaded', generateHeatmap);
+</script>
+
+<style>
+    /* Smooth hover effects */
+    #calendar-heatmap > div > div > div:hover {
+        transform: scale(1.5);
+    }
+</style>
+{% endblock %}

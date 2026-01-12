@@ -6,20 +6,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Success Stacker{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Smooth transitions */
+        * {
+            transition: all 0.2s ease;
+        }
+
+        /* Hover effects za kartice */
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     {% if current_user.is_authenticated %}
     <nav class="bg-white shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="{{ url_for('main.feed') }}" class="text-xl font-bold">Success Stacker</a>
-            <div class="flex gap-4">
-                <a href="{{ url_for('main.morning') }}">Jutro</a>
-                <a href="{{ url_for('main.evening') }}">Večer</a>
-                <a href="{{ url_for('main.feed') }}">Feed</a>
-                <a href="{{ url_for('main.insights') }}">Insights</a>  <!-- NOVI LINK -->
-                <a href="{{ url_for('auth.logout') }}">Odjava</a>
-                <a href="{{ url_for('main.export_data') }}">Export CSV</a>
+        <div class="max-w-4xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="{{ url_for('main.feed') }}" class="text-xl font-bold">Success Stacker</a>
+
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+
+                <!-- Desktop menu -->
+                <div class="hidden md:flex gap-4">
+                    <a href="{{ url_for('main.morning') }}" class="hover:text-blue-600">Jutro</a>
+                    <a href="{{ url_for('main.evening') }}" class="hover:text-purple-600">Večer</a>
+                    <a href="{{ url_for('main.feed') }}" class="hover:text-gray-600">Feed</a>
+                    <a href="{{ url_for('main.calendar') }}" class="hover:text-green-600">📅 Kalendar</a>
+                    <a href="{{ url_for('main.insights') }}" class="hover:text-orange-600">Insights</a>
+                    <a href="{{ url_for('main.export_data') }}" class="text-sm hover:text-gray-600">Export</a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-sm hover:text-red-600">Odjava</a>
+                </div>
+            </div>
+
+            <!-- Mobile menu (hidden by default) -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 space-y-2">
+                <a href="{{ url_for('main.morning') }}" class="block py-2 hover:text-blue-600">🌅 Jutro</a>
+                <a href="{{ url_for('main.evening') }}" class="block py-2 hover:text-purple-600">🌙 Večer</a>
+                <a href="{{ url_for('main.feed') }}" class="block py-2 hover:text-gray-600">📊 Feed</a>
+                <a href="{{ url_for('main.calendar') }}" class="block py-2 hover:text-green-600">📅 Kalendar</a>
+                <a href="{{ url_for('main.insights') }}" class="block py-2 hover:text-orange-600">📈 Insights</a>
+                <a href="{{ url_for('main.export_data') }}" class="block py-2 text-sm hover:text-gray-600">💾 Export</a>
+                <a href="{{ url_for('auth.logout') }}" class="block py-2 text-sm hover:text-red-600">🚪 Odjava</a>
             </div>
         </div>
     </nav>

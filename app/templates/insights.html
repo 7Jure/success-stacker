@@ -2,43 +2,272 @@
 {% block title %}Insights{% endblock %}
 {% block content %}
 <div class="py-8">
-    <h1 class="text-3xl font-bold mb-8">📊 Tjedni Insights</h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-lg shadow">
-            <p class="text-gray-600 text-sm">Dana popunjeno</p>
-            <p class="text-4xl font-bold">{{ total_days }}/7</p>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <p class="text-gray-600 text-sm">Prosječna energija</p>
-            <p class="text-4xl font-bold">{{ avg_energy }}/5</p>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <p class="text-gray-600 text-sm">Najaktivniji stupac</p>
-            <p class="text-2xl font-bold">
-                {% set max_pillar = pillar_counts|dictsort(by='value', reverse=True)|first %}
-                {{ max_pillar[0]|title }}
-            </p>
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">📊 Insights & Analytics</h1>
+
+        <!-- Period selector -->
+        <div class="flex gap-2">
+            <a href="?period=7" class="px-4 py-2 rounded-lg {% if period == 7 %}bg-blue-500 text-white{% else %}bg-white text-gray-700 hover:bg-gray-100{% endif %}">
+                7 dana
+            </a>
+            <a href="?period=30" class="px-4 py-2 rounded-lg {% if period == 30 %}bg-blue-500 text-white{% else %}bg-white text-gray-700 hover:bg-gray-100{% endif %}">
+                30 dana
+            </a>
+            <a href="?period=90" class="px-4 py-2 rounded-lg {% if period == 90 %}bg-blue-500 text-white{% else %}bg-white text-gray-700 hover:bg-gray-100{% endif %}">
+                90 dana
+            </a>
         </div>
     </div>
-    
-    <div class="bg-white p-6 rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">Aktivnost po stupcima</h2>
+
+    <!-- Glavne statistike -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gradient-to-br from-blue-400 to-blue-600 text-white p-6 rounded-lg shadow-lg card-hover fade-in">
+            <p class="text-sm uppercase tracking-wide opacity-90">📅 Dana s podacima</p>
+            <p class="text-4xl font-bold mt-2">{{ total_days }}</p>
+            <p class="text-sm mt-1 opacity-90">od {{ period }}</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-lg shadow-lg card-hover fade-in" style="animation-delay: 0.1s">
+            <p class="text-sm uppercase tracking-wide opacity-90">✅ Stopa završetka</p>
+            <p class="text-4xl font-bold mt-2">{{ completion_rate }}%</p>
+            <p class="text-sm mt-1 opacity-90">{{ complete_days }} potpunih dana</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-orange-400 to-orange-600 text-white p-6 rounded-lg shadow-lg card-hover fade-in" style="animation-delay: 0.2s">
+            <p class="text-sm uppercase tracking-wide opacity-90">⚡ Prosječna energija</p>
+            <p class="text-4xl font-bold mt-2">{{ avg_energy }}</p>
+            <p class="text-sm mt-1 opacity-90">od 5.0</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-400 to-purple-600 text-white p-6 rounded-lg shadow-lg card-hover fade-in" style="animation-delay: 0.3s">
+            <p class="text-sm uppercase tracking-wide opacity-90">🔥 Trenutni Streak</p>
+            <p class="text-4xl font-bold mt-2">{{ streaks.current_streak }}</p>
+            <p class="text-sm mt-1 opacity-90">dana zaredom</p>
+        </div>
+    </div>
+
+    <!-- Grafovi -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Graf energije -->
+        <div class="bg-white p-6 rounded-lg shadow-lg card-hover fade-in" style="animation-delay: 0.4s">
+            <h2 class="text-xl font-bold mb-4">📈 Energija kroz vrijeme</h2>
+            <canvas id="energyChart"></canvas>
+        </div>
+
+        <!-- Stupci aktivnosti -->
+        <div class="bg-white p-6 rounded-lg shadow-lg card-hover fade-in" style="animation-delay: 0.5s">
+            <h2 class="text-xl font-bold mb-4">🎯 Aktivnost po stupcima</h2>
+            <canvas id="pillarsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Kumulativni graf aktivnosti -->
+    <div class="bg-white p-6 rounded-lg shadow-lg card-hover fade-in" style="animation-delay: 0.6s">
+        <h2 class="text-xl font-bold mb-4">📊 Kumulativna aktivnost stupova</h2>
+        <canvas id="cumulativeChart" style="height: 300px;"></canvas>
+    </div>
+
+    <!-- Detaljna statistika po stupcima -->
+    <div class="bg-white p-6 rounded-lg shadow-lg mt-8 fade-in" style="animation-delay: 0.7s">
+        <h2 class="text-xl font-bold mb-4">🏆 Detaljna statistika</h2>
         <div class="space-y-4">
             {% for pillar, count in pillar_counts.items() %}
             <div>
-                <div class="flex justify-between mb-1">
-                    <span class="capitalize">{{ pillar }}</span>
-                    <span>{{ count }}/7</span>
+                <div class="flex justify-between mb-2">
+                    <span class="font-medium capitalize">
+                        {% if pillar == 'posao' %}💼 Posao{% endif %}
+                        {% if pillar == 'zdravlje' %}❤️ Zdravlje{% endif %}
+                        {% if pillar == 'odnosi' %}👥 Odnosi{% endif %}
+                        {% if pillar == 'financije' %}💰 Financije{% endif %}
+                        {% if pillar == 'rast' %}🌱 Osobni rast{% endif %}
+                    </span>
+                    <span class="text-gray-600">{{ count }}/{{ total_days }} ({{ (count/total_days*100)|round(1) if total_days > 0 else 0 }}%)</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-blue-500 h-3 rounded-full" style="width: {{ (count/7*100)|int }}%"></div>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div class="h-4 rounded-full transition-all duration-500
+                        {% if pillar == 'posao' %}bg-blue-500{% endif %}
+                        {% if pillar == 'zdravlje' %}bg-red-500{% endif %}
+                        {% if pillar == 'odnosi' %}bg-purple-500{% endif %}
+                        {% if pillar == 'financije' %}bg-green-500{% endif %}
+                        {% if pillar == 'rast' %}bg-yellow-500{% endif %}"
+                        style="width: {{ (count/total_days*100)|round(1) if total_days > 0 else 0 }}%">
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+// Podaci sa servera
+const energyData = {{ energy_data | tojson }};
+const pillarActivity = {{ pillar_activity | tojson }};
+const pillarCounts = {{ pillar_counts | tojson }};
+
+// Konfiguracija boja
+const colors = {
+    posao: { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgb(59, 130, 246)' },
+    zdravlje: { bg: 'rgba(239, 68, 68, 0.2)', border: 'rgb(239, 68, 68)' },
+    odnosi: { bg: 'rgba(168, 85, 247, 0.2)', border: 'rgb(168, 85, 247)' },
+    financije: { bg: 'rgba(34, 197, 94, 0.2)', border: 'rgb(34, 197, 94)' },
+    rast: { bg: 'rgba(234, 179, 8, 0.2)', border: 'rgb(234, 179, 8)' }
+};
+
+// Graf energije kroz vrijeme
+const energyCtx = document.getElementById('energyChart').getContext('2d');
+new Chart(energyCtx, {
+    type: 'line',
+    data: {
+        labels: energyData.labels,
+        datasets: [{
+            label: 'Energija',
+            data: energyData.values,
+            borderColor: 'rgb(249, 115, 22)',
+            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: { size: 14 },
+                bodyFont: { size: 13 }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 5,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// Bar chart za stupce
+const pillarsCtx = document.getElementById('pillarsChart').getContext('2d');
+new Chart(pillarsCtx, {
+    type: 'bar',
+    data: {
+        labels: ['💼 Posao', '❤️ Zdravlje', '👥 Odnosi', '💰 Financije', '🌱 Rast'],
+        datasets: [{
+            label: 'Broj popunjenih dana',
+            data: [
+                pillarCounts.posao,
+                pillarCounts.zdravlje,
+                pillarCounts.odnosi,
+                pillarCounts.financije,
+                pillarCounts.rast
+            ],
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(239, 68, 68, 0.7)',
+                'rgba(168, 85, 247, 0.7)',
+                'rgba(34, 197, 94, 0.7)',
+                'rgba(234, 179, 8, 0.7)'
+            ],
+            borderColor: [
+                'rgb(59, 130, 246)',
+                'rgb(239, 68, 68)',
+                'rgb(168, 85, 247)',
+                'rgb(34, 197, 94)',
+                'rgb(234, 179, 8)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+
+// Kumulativni graf
+const cumulativeCtx = document.getElementById('cumulativeChart').getContext('2d');
+new Chart(cumulativeCtx, {
+    type: 'line',
+    data: {
+        labels: energyData.labels,
+        datasets: [
+            {
+                label: '💼 Posao',
+                data: pillarActivity.posao,
+                borderColor: colors.posao.border,
+                backgroundColor: colors.posao.bg,
+                tension: 0.4,
+                fill: false
+            },
+            {
+                label: '❤️ Zdravlje',
+                data: pillarActivity.zdravlje,
+                borderColor: colors.zdravlje.border,
+                backgroundColor: colors.zdravlje.bg,
+                tension: 0.4,
+                fill: false
+            },
+            {
+                label: '👥 Odnosi',
+                data: pillarActivity.odnosi,
+                borderColor: colors.odnosi.border,
+                backgroundColor: colors.odnosi.bg,
+                tension: 0.4,
+                fill: false
+            },
+            {
+                label: '💰 Financije',
+                data: pillarActivity.financije,
+                borderColor: colors.financije.border,
+                backgroundColor: colors.financije.bg,
+                tension: 0.4,
+                fill: false
+            },
+            {
+                label: '🌱 Rast',
+                data: pillarActivity.rast,
+                borderColor: colors.rast.border,
+                backgroundColor: colors.rast.bg,
+                tension: 0.4,
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    padding: 15
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+</script>
 {% endblock %}
