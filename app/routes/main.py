@@ -221,25 +221,6 @@ def insights():
         "values": [entry.morning_energy if entry.morning_energy else 0 for entry in entries],
     }
 
-    # Graf aktivnosti stupova (cumulative)
-    pillar_activity = {
-        "posao": [],
-        "zdravlje": [],
-        "odnosi": [],
-        "financije": [],
-        "rast": [],
-    }
-
-    cumulative_counts = {"posao": 0, "zdravlje": 0, "odnosi": 0, "financije": 0, "rast": 0}
-
-    for entry in entries:
-        if entry.evening_wins:
-            for pillar in pillar_activity.keys():
-                if entry.evening_wins.get(pillar, "").strip():
-                    cumulative_counts[pillar] += 1
-        for pillar in pillar_activity.keys():
-            pillar_activity[pillar].append(cumulative_counts[pillar])
-
     # Streaks
     streaks = calculate_streaks(current_user.id)
 
@@ -255,7 +236,6 @@ def insights():
         avg_energy=round(avg_energy, 1),
         pillar_counts=pillar_counts,
         energy_data=energy_data,
-        pillar_activity=pillar_activity,
         period=period,
         streaks=streaks,
         completion_rate=round(completion_rate, 1),

@@ -19,6 +19,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Dark mode toggle
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', function() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+
+            if (isDark) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                localStorage.setItem('darkMode', 'true');
+            }
+        });
+    }
+
     // Smooth scroll to top
     window.addEventListener('scroll', function() {
         const scrollBtn = document.getElementById('scroll-to-top');
